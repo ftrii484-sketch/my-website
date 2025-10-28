@@ -1,102 +1,115 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Link Saya</title>
 
-  <!-- Import ikon dari Font Awesome -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
 
     body {
       background: linear-gradient(135deg, #6a11cb, #2575fc);
       color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-      padding: 20px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      text-align:center;
+      padding:20px;
     }
 
     img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 3px solid white;
-      margin-bottom: 20px;
+      width:100px;
+      height:100px;
+      border-radius:50%;
+      border:3px solid white;
+      margin-bottom:12px;
+      object-fit:cover;
     }
 
-    h1 {
-      margin-bottom: 10px;
-      font-size: 26px;
+    #greeting {
+      font-size:22px;
+      margin-bottom:14px;
+      white-space:nowrap;
+      overflow:visible;
     }
 
-    p {
-      margin-bottom: 30px;
-      font-size: 16px;
-      opacity: 0.9;
+    .caret {
+      border-right: 3px solid currentColor;
+      padding-right:6px;
+      animation: blink-caret 0.8s step-end infinite;
     }
+
+    @keyframes blink-caret {
+      50% { border-color: transparent; }
+    }
+
+    h1 { margin-bottom: 10px; font-size:26px; color: #fff; }
+
+    p { margin-bottom: 20px; font-size:16px; opacity:0.9; }
 
     a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: white;
-      color: #2575fc;
-      text-decoration: none;
-      padding: 12px 20px;
-      margin: 10px 0;
-      border-radius: 30px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      max-width: 300px;
-      width: 100%;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      background:white; color:#2575fc; text-decoration:none;
+      padding:12px 20px; margin:8px 0; border-radius:30px;
+      font-weight:600; transition: all 0.25s ease; max-width:300px; width:100%;
     }
 
     a:hover {
-      background: #2575fc;
-      color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      background:#2575fc; color:white; transform:translateY(-3px);
+      box-shadow:0 6px 18px rgba(0,0,0,0.18);
     }
 
-    footer {
-      margin-top: 30px;
-      font-size: 14px;
-      opacity: 0.7;
+    footer { margin-top:26px; font-size:14px; opacity:0.8; color:rgba(255,255,255,0.9); }
+
+    @media (max-width:420px){
+      #greeting { font-size:18px; }
+      h1 { font-size:20px; }
+      img { width:84px; height:84px; }
     }
   </style>
 </head>
 <body>
-  <!-- Foto profil -->
   <img src="5a52725305fc2bdd1cea4d89843df8e4 (1).jpg" alt="Foto Profil">
 
-  <!-- Nama & deskripsi -->
-  <h1>Fii</h1>
-  <p></p>
+  <h2 id="greeting" aria-live="polite" role="status"></h2>
 
-  <!-- Tombol link aktif -->
+  <a href="https://wa.me/6285183284059" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+  <a href="https://ftrii484-sketch.github.io/My-Pas5/" target="_blank"><i class="fab fa-github"></i> GitHub</a>
 
-  <a href="https://wa.me/6285183284059" target="_blank">
-  <i class="fab fa-whatsapp"></i> WhatsApp
-</a>
+  <footer>© 2025 </footer>
 
-  <a href="https://ftrii484-sketch.github.io/My-Pas5/" target="_blank">
-    <i class="fab fa-github"></i> GitHub
-  </a>
+  <script>
+    // Tentukan ucapan tanpa spasi setelah koma
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Hoi, Goedemorgen!";
+      if (hour < 18) return "Hoi, Goedemiddag!";
+      return "Hoi,Goedenavond!";
+    }
 
-  <footer>© 2025 Dibuat dengan ❤️ oleh Saya</footer>
+    async function typeEffectWithCaret(el, text, speed = 70) {
+      el.textContent = "";
+      el.classList.add('caret');
+      for (let i = 0; i < text.length; i++) {
+        el.textContent += text.charAt(i);
+        await new Promise(r => setTimeout(r, speed));
+      }
+    }
+
+    const greetingEl = document.getElementById('greeting');
+
+    function startGreeting() {
+      const text = getGreeting();
+      typeEffectWithCaret(greetingEl, text, 70);
+    }
+
+    startGreeting();
+  </script>
 </body>
 </html>
-

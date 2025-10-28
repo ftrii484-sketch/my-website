@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Link Saya</title>
 
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
 
     body {
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
       color: white;
       display:flex;
       flex-direction:column;
@@ -21,6 +19,8 @@
       min-height:100vh;
       text-align:center;
       padding:20px;
+      overflow:hidden;
+      transition: background 2s ease;
     }
 
     img {
@@ -30,6 +30,7 @@
       border:3px solid white;
       margin-bottom:12px;
       object-fit:cover;
+      z-index:2;
     }
 
     #greeting {
@@ -37,6 +38,7 @@
       margin-bottom:14px;
       white-space:nowrap;
       overflow:visible;
+      z-index:2;
     }
 
     .caret {
@@ -49,15 +51,14 @@
       50% { border-color: transparent; }
     }
 
-    h1 { margin-bottom: 10px; font-size:26px; color: #fff; }
-
-    p { margin-bottom: 20px; font-size:16px; opacity:0.9; }
+    h1 { margin-bottom: 10px; font-size:26px; color: #fff; z-index:2; }
 
     a {
       display:flex; align-items:center; justify-content:center; gap:10px;
       background:white; color:#2575fc; text-decoration:none;
       padding:12px 20px; margin:8px 0; border-radius:30px;
       font-weight:600; transition: all 0.25s ease; max-width:300px; width:100%;
+      z-index:2;
     }
 
     a:hover {
@@ -65,16 +66,98 @@
       box-shadow:0 6px 18px rgba(0,0,0,0.18);
     }
 
-    footer { margin-top:26px; font-size:14px; opacity:0.8; color:rgba(255,255,255,0.9); }
+    footer { margin-top:26px; font-size:14px; opacity:0.8; color:rgba(255,255,255,0.9); z-index:2; }
 
     @media (max-width:420px){
       #greeting { font-size:18px; }
       h1 { font-size:20px; }
       img { width:84px; height:84px; }
     }
+
+    /* ====== ANIMASI ====== */
+    .animation {
+      position:absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      overflow:hidden;
+      z-index:1;
+    }
+
+    /* Matahari terbit */
+    .sunrise {
+      background: linear-gradient(to top, #FF512F, #F09819);
+      animation: skyRise 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes skyRise {
+      0% { filter: brightness(0.8); }
+      100% { filter: brightness(1.1); }
+    }
+
+    .sunrise::before {
+      content:'';
+      position:absolute;
+      bottom:-50px; left:50%;
+      transform:translateX(-50%);
+      width:120px; height:120px;
+      background: radial-gradient(circle at center, #FFD700 50%, transparent 70%);
+      border-radius:50%;
+      animation: rise 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes rise {
+      0% { bottom:-50px; }
+      100% { bottom:150px; }
+    }
+
+    /* Matahari siang */
+    .day {
+      background: linear-gradient(to top, #56CCF2, #2F80ED);
+    }
+
+    .day::before {
+      content:'';
+      position:absolute;
+      top:100px; left:50%;
+      transform:translateX(-50%);
+      width:100px; height:100px;
+      background: radial-gradient(circle at center, #FFD93D 50%, transparent 70%);
+      border-radius:50%;
+      animation: sunMove 10s linear infinite alternate;
+    }
+
+    @keyframes sunMove {
+      0% { transform:translate(-50%, 0px); }
+      100% { transform:translate(-50%, 30px); }
+    }
+
+    /* Bulan malam */
+    .night {
+      background: linear-gradient(to top, #0f2027, #203a43, #2c5364);
+    }
+
+    .night::before {
+      content:'';
+      position:absolute;
+      top:80px; left:50%;
+      transform:translateX(-50%);
+      width:90px; height:90px;
+      background: radial-gradient(circle at 30% 30%, #f8f8ff 60%, transparent 80%);
+      border-radius:50%;
+      box-shadow: 0 0 20px #f0f8ff;
+      animation: moonGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes moonGlow {
+      0% { opacity:0.7; }
+      100% { opacity:1; }
+    }
+
   </style>
 </head>
 <body>
+  <div id="bg" class="animation"></div>
+
   <img src="5a52725305fc2bdd1cea4d89843df8e4 (1).jpg" alt="Foto Profil">
 
   <h2 id="greeting" aria-live="polite" role="status"></h2>
@@ -85,12 +168,11 @@
   <footer>© 2025 </footer>
 
   <script>
-    // Tentukan ucapan tanpa spasi setelah koma
     function getGreeting() {
       const hour = new Date().getHours();
-      if (hour < 12) return "Hoi, Goedemorgen!";
-      if (hour < 18) return "Hoi, Goedemiddag!";
-      return "Hoi,Goedenavond!";
+      if (hour < 12) return { text: "Hoi,Goedemorgen!", theme: "sunrise" };
+      if (hour < 18) return { text: "Hoi,Goedemiddag!", theme: "day" };
+      return { text: "Hoi,Goedenavond!", theme: "night" };
     }
 
     async function typeEffectWithCaret(el, text, speed = 70) {
@@ -103,13 +185,23 @@
     }
 
     const greetingEl = document.getElementById('greeting');
+    const bg = document.getElementById('bg');
+    let currentText = "";
 
-    function startGreeting() {
-      const text = getGreeting();
-      typeEffectWithCaret(greetingEl, text, 70);
+    async function updateGreeting() {
+      const { text, theme } = getGreeting();
+      if (text !== currentText) {
+        currentText = text;
+        bg.className = "animation " + theme;
+        greetingEl.classList.remove('caret');
+        greetingEl.textContent = "";
+        await new Promise(r => setTimeout(r, 300));
+        typeEffectWithCaret(greetingEl, text, 70);
+      }
     }
 
-    startGreeting();
+    updateGreeting();
+    setInterval(updateGreeting, 60000);
   </script>
 </body>
 </html>

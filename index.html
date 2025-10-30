@@ -50,6 +50,28 @@
 
     h1 { margin-bottom: 10px; font-size:26px; color: #fff; }
 
+    .clock {
+      margin-bottom: 16px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 14px 25px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      text-align:center;
+    }
+
+    .time {
+      font-size: 1.8em;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+
+    .date {
+      font-size: 1em;
+      opacity: 0.9;
+      margin-top: 5px;
+    }
+
     a {
       display:flex; align-items:center; justify-content:center; gap:10px;
       background:white; color:#2575fc; text-decoration:none;
@@ -66,6 +88,7 @@
 
     @media (max-width:420px){
       #greeting { font-size:18px; }
+      .time { font-size:1.5em; }
       h1 { font-size:20px; }
       img { width:84px; height:84px; }
     }
@@ -91,17 +114,22 @@
 
   <h2 id="greeting" aria-live="polite" role="status"></h2>
 
+  <div class="clock">
+    <div class="time" id="time">00:00:00</div>
+    <div class="date" id="date">Maandag, 1 januari 2025</div>
+  </div>
+
   <a href="https://wa.me/6285183284059" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
   <a href="https://ftrii484-sketch.github.io/My-Pas5/" target="_blank"><i class="fab fa-github"></i> GitHub</a>
 
-  <footer>© 2025 </footer>
+  <footer>© 2025</footer>
 
   <script>
     function getGreeting() {
       const hour = new Date().getHours();
-      if (hour < 12) return { text: "Hoi, Goedemorgen!", theme: "sunrise" };
-      if (hour < 18) return { text: "Hoi, Goedemiddag!", theme: "day" };
-      return { text: "Hoi, Goedenavond!", theme: "night" };
+      if (hour < 12) return { text: "Goedemorgen", theme: "sunrise" };
+      if (hour < 18) return { text: "Goedemiddag", theme: "day" };
+      return { text: "Goedeavond", theme: "night" };
     }
 
     async function typeEffectWithCaret(el, text, speed = 70) {
@@ -111,7 +139,6 @@
         el.textContent += text.charAt(i);
         await new Promise(r => setTimeout(r, speed));
       }
-      // Setelah selesai ngetik, hapus efek caret
       el.classList.remove('caret');
     }
 
@@ -123,15 +150,31 @@
       const { text, theme } = getGreeting();
       if (text !== currentText) {
         currentText = text;
-        bg.className = theme; // ubah warna sesuai tema
+        bg.className = theme;
         greetingEl.textContent = "";
         await new Promise(r => setTimeout(r, 300));
         typeEffectWithCaret(greetingEl, text, 70);
       }
     }
 
+    // ====== Jam & Tanggal ======
+    function updateClock() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
+
+      const days = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+      const months = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+      const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      document.getElementById('date').textContent = dateStr;
+    }
+
     updateGreeting();
+    updateClock();
     setInterval(updateGreeting, 60000);
+    setInterval(updateClock, 1000);
   </script>
 </body>
 </html>

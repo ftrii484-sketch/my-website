@@ -201,77 +201,122 @@
     </a>
   </div>
 
-  <script>
-    const body = document.body;
-    const greetingEl = document.getElementById("greeting");
-    const timeEl = document.getElementById("time");
-    const dateEl = document.getElementById("date");
-    const sun = document.getElementById("sun");
-    const moon = document.getElementById("moon");
-    const stars = document.getElementById("stars");
+ <style>
+/* Efek cursor blink */
+@keyframes blink {
+  0%, 50%, 100% { border-right-color: rgba(0,0,0,0.7); }
+  25%, 75% { border-right-color: transparent; }
+}
 
-    function updateClock() {
-      const now = new Date();
-      const hour = now.getHours();
-      const minute = now.getMinutes().toString().padStart(2, "0");
-      const second = now.getSeconds().toString().padStart(2, "0");
-      const timeStr = `${hour.toString().padStart(2, "0")}:${minute}:${second}`;
-      timeEl.textContent = timeStr;
+#-greeting-cursor {
+  display: inline;
+  border-right: 2px solid rgba(0,0,0,0.7);
+  animation: blink 1s step-end infinite;
+}
+</style>
 
-      const days = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
-      const months = ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"];
-      const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-      dateEl.textContent = dateStr;
+<script>
+const body = document.body;
+const greetingEl = document.getElementById("greeting");
+const timeEl = document.getElementById("time");
+const dateEl = document.getElementById("date");
+const sun = document.getElementById("sun");
+const moon = document.getElementById("moon");
+const stars = document.getElementById("stars");
 
-      setTheme(hour);
+let currentGreeting = ""; // menyimpan ucapan saat ini
+
+function typeWriter(text, element, delay = 70) {
+  element.textContent = ""; // kosongkan dulu
+  let i = 0;
+
+  function type() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      setTimeout(type, delay);
+    } else {
+      // tambahkan cursor blink setelah selesai mengetik
+      const span = document.createElement("span");
+      span.id = "greeting-cursor";
+      element.appendChild(span);
     }
+  }
 
-    function setTheme(hour) {
-      if (hour >= 5 && hour < 11) {
-        body.style.background = "var(--pagi-bg)";
-        body.style.color = "var(--pagi-text)";
-        greetingEl.textContent = "Goedemorgen ☀️";
-        sun.style.display = "block";
-        sun.style.top = "25%";
-        sun.style.left = "20%";
-        sun.style.animation = "floatSun 6s ease-in-out infinite";
-        moon.style.display = "none";
-        stars.style.opacity = 0;
-      } else if (hour >= 11 && hour < 15) {
-        body.style.background = "var(--siang-bg)";
-        body.style.color = "var(--siang-text)";
-        greetingEl.textContent = "Goedemiddag 🌤️";
-        sun.style.display = "block";
-        sun.style.top = "10%";
-        sun.style.left = "50%";
-        sun.style.animation = "floatSun 5s ease-in-out infinite";
-        moon.style.display = "none";
-        stars.style.opacity = 0;
-      } else if (hour >= 15 && hour < 18) {
-        body.style.background = "var(--sore-bg)";
-        body.style.color = "var(--sore-text)";
-        greetingEl.textContent = "Goede namiddag 🌇";
-        sun.style.display = "block";
-        sun.style.top = "45%";
-        sun.style.left = "70%";
-        sun.style.animation = "floatSun 7s ease-in-out infinite";
-        moon.style.display = "none";
-        stars.style.opacity = 0.2;
-      } else {
-        body.style.background = "var(--malam-bg)";
-        body.style.color = "var(--malam-text)";
-        greetingEl.textContent = "Goedeavond 🌙";
-        sun.style.display = "none";
-        moon.style.display = "block";
-        moon.style.top = "30%";
-        moon.style.left = "60%";
-        moon.style.animation = "floatMoon 10s ease-in-out infinite";
-        stars.style.opacity = 1;
-      }
-    }
+  type();
+}
 
-    setInterval(updateClock, 1000);
-    updateClock();
-  </script>
+function updateClock() {
+  const now = new Date();
+  const hour = now.getHours();
+  const minute = now.getMinutes().toString().padStart(2, "0");
+  const second = now.getSeconds().toString().padStart(2, "0");
+  timeEl.textContent = `${hour.toString().padStart(2,"0")}:${minute}:${second}`;
+
+  const days = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
+  const months = ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"];
+  dateEl.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  setTheme(hour);
+}
+
+function setTheme(hour) {
+  let greetingText = "";
+
+  if (hour >= 5 && hour < 11) {
+    body.style.background = "var(--pagi-bg)";
+    body.style.color = "var(--pagi-text)";
+    greetingText = "Goedemorgen!";
+    sun.style.display = "block";
+    sun.style.top = "25%";
+    sun.style.left = "20%";
+    sun.style.animation = "floatSun 6s ease-in-out infinite";
+    moon.style.display = "none";
+    stars.style.opacity = 0;
+  } else if (hour >= 11 && hour < 15) {
+    body.style.background = "var(--siang-bg)";
+    body.style.color = "var(--siang-text)";
+    greetingText = "Goedemiddag!";
+    sun.style.display = "block";
+    sun.style.top = "10%";
+    sun.style.left = "50%";
+    sun.style.animation = "floatSun 5s ease-in-out infinite";
+    moon.style.display = "none";
+    stars.style.opacity = 0;
+  } else if (hour >= 15 && hour < 18) {
+    body.style.background = "var(--sore-bg)";
+    body.style.color = "var(--sore-text)";
+    greetingText = "Goede namiddag!";
+    sun.style.display = "block";
+    sun.style.top = "45%";
+    sun.style.left = "70%";
+    sun.style.animation = "floatSun 7s ease-in-out infinite";
+    moon.style.display = "none";
+    stars.style.opacity = 0.2;
+  } else {
+    body.style.background = "var(--malam-bg)";
+    body.style.color = "var(--malam-text)";
+    greetingText = "Goedeavond!";
+    sun.style.display = "none";
+    moon.style.display = "block";
+    moon.style.top = "30%";
+    moon.style.left = "60%";
+    moon.style.animation = "floatMoon 10s ease-in-out infinite";
+    stars.style.opacity = 1;
+  }
+
+  // hanya jalankan typeWriter jika ucapan berubah
+  if (currentGreeting !== greetingText) {
+    currentGreeting = greetingText;
+    // hapus cursor lama jika ada
+    const oldCursor = document.getElementById("greeting-cursor");
+    if (oldCursor) oldCursor.remove();
+    typeWriter(greetingText, greetingEl, 100);
+  }
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+</script>
 </body>
 </html>

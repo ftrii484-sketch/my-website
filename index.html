@@ -253,3 +253,1023 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wereldklok - Interactieve Tijd</title>
+
+  <!-- Font Awesome untuk ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --pagi-bg: linear-gradient(180deg, #a8e6ff, #fff5cc);
+      --siang-bg: linear-gradient(180deg, #4fc3f7, #ffffff);
+      --sore-bg: linear-gradient(180deg, #ff9966, #ffcc99);
+      --malam-bg: linear-gradient(180deg, #001f3f, #1a1a40);
+
+      --pagi-text: #1a1a1a;
+      --siang-text: #222;
+      --sore-text: #331a00;
+      --malam-text: #f1f1f1;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      transition: background 1.5s ease, color 1.5s ease;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      transition: color 1.5s ease;
+    }
+
+    .clock {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      padding: 30px 50px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      text-align: center;
+      transition: all 1s ease;
+    }
+
+    .time {
+      font-size: 4em;
+      font-weight: 700;
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+    }
+
+    .date {
+      font-size: 1.4em;
+      opacity: 0.9;
+    }
+
+    /* ===== Tombol Link ===== */
+    .links {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 220px; /* panjang tombol sama */
+      text-align: center;
+    }
+
+    .link-btn i {
+      font-size: 1.2em;
+    }
+
+    .link-btn.whatsapp {
+      background: #25D366;
+      color: white;
+    }
+    .link-btn.whatsapp:hover {
+      background: #1ebe5b;
+      transform: translateY(-3px);
+    }
+
+    .link-btn.github {
+      background: #333;
+      color: white;
+    }
+    .link-btn.github:hover {
+      background: #555;
+      transform: translateY(-3px);
+    }
+
+    /* ===== Scene ===== */
+    .scene {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      transition: background 2s ease;
+    }
+
+    .sun, .moon {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      transition: all 1.5s ease;
+    }
+
+    .sun {
+      background: radial-gradient(circle, #fff58c, #ffb400);
+      filter: drop-shadow(0 0 30px rgba(255, 200, 0, 0.7));
+    }
+
+    .moon {
+      background: radial-gradient(circle, #dfe6e9, #b2bec3);
+      filter: drop-shadow(0 0 25px rgba(200,200,255,0.4));
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: transparent url('https://i.ibb.co/2v9pM5d/stars.png') repeat;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    @keyframes floatSun {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes floatMoon {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="sun" id="sun"></div>
+    <div class="moon" id="moon"></div>
+    <div class="stars" id="stars"></div>
+  </div>
+
+  <h1 id="greeting">Welkom 🌤️</h1>
+  <div class="clock">
+    <div class="time" id="time">00:00:00</div>
+    <div class="date" id="date">Maandag, 1 januari 2025</div>
+  </div>
+
+  <div class="links">
+    <a href="https://wa.me/6285183284059" target="_blank" class="link-btn whatsapp">
+      <i class="fab fa-whatsapp"></i> WhatsApp
+    </a>
+    <a href="https://github.com/ftrii484-sketch" target="_blank" class="link-btn github">
+      <i class="fab fa-github"></i> GitHub
+    </a>
+  </div>
+
+  <script>
+    const body = document.body;
+    const greetingEl = document.getElementById('greeting');
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+    const sun = document.getElementById('sun');
+    const moon = document.getElementById('moon');
+    const stars = document.getElementById('stars');
+
+    function updateClock() {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes().toString().padStart(2, '0');
+      const second = now.getSeconds().toString().padStart(2, '0');
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute}:${second}`;
+      timeEl.textContent = timeStr;
+
+      const days = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+      const months = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+      const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      dateEl.textContent = dateStr;
+
+      setTheme(hour);
+    }
+
+    function setTheme(hour) {
+      if (hour >= 5 && hour < 11) {
+        body.style.background = "var(--pagi-bg)";
+        body.style.color = "var(--pagi-text)";
+        greetingEl.textContent = "Goedemorgen ☀️";
+        sun.style.display = "block";
+        sun.style.top = "25%";
+        sun.style.left = "20%";
+        sun.style.animation = "floatSun 6s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 11 && hour < 15) {
+        body.style.background = "var(--siang-bg)";
+        body.style.color = "var(--siang-text)";
+        greetingEl.textContent = "Goedemiddag 🌤️";
+        sun.style.display = "block";
+        sun.style.top = "10%";
+        sun.style.left = "50%";
+        sun.style.animation = "floatSun 5s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 15 && hour < 18) {
+        body.style.background = "var(--sore-bg)";
+        body.style.color = "var(--sore-text)";
+        greetingEl.textContent = "Goede namiddag 🌇";
+        sun.style.display = "block";
+        sun.style.top = "45%";
+        sun.style.left = "70%";
+        sun.style.animation = "floatSun 7s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0.2;
+      } else {
+        body.style.background = "var(--malam-bg)";
+        body.style.color = "var(--malam-text)";
+        greetingEl.textContent = "Goedeavond 🌙";
+        sun.style.display = "none";
+        moon.style.display = "block";
+        moon.style.top = "30%";
+        moon.style.left = "60%";
+        moon.style.animation = "floatMoon 10s ease-in-out infinite";
+        stars.style.opacity = 1;
+      }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wereldklok - Interactieve Tijd</title>
+
+  <!-- Font Awesome untuk ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --pagi-bg: linear-gradient(180deg, #a8e6ff, #fff5cc);
+      --siang-bg: linear-gradient(180deg, #4fc3f7, #ffffff);
+      --sore-bg: linear-gradient(180deg, #ff9966, #ffcc99);
+      --malam-bg: linear-gradient(180deg, #001f3f, #1a1a40);
+
+      --pagi-text: #1a1a1a;
+      --siang-text: #222;
+      --sore-text: #331a00;
+      --malam-text: #f1f1f1;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      transition: background 1.5s ease, color 1.5s ease;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      transition: color 1.5s ease;
+    }
+
+    .clock {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      padding: 30px 50px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      text-align: center;
+      transition: all 1s ease;
+    }
+
+    .time {
+      font-size: 4em;
+      font-weight: 700;
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+    }
+
+    .date {
+      font-size: 1.4em;
+      opacity: 0.9;
+    }
+
+    /* ===== Tombol Link ===== */
+    .links {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 220px; /* panjang tombol sama */
+      text-align: center;
+    }
+
+    .link-btn i {
+      font-size: 1.2em;
+    }
+
+    .link-btn.whatsapp {
+      background: #25D366;
+      color: white;
+    }
+    .link-btn.whatsapp:hover {
+      background: #1ebe5b;
+      transform: translateY(-3px);
+    }
+
+    .link-btn.github {
+      background: #333;
+      color: white;
+    }
+    .link-btn.github:hover {
+      background: #555;
+      transform: translateY(-3px);
+    }
+
+    /* ===== Scene ===== */
+    .scene {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      transition: background 2s ease;
+    }
+
+    .sun, .moon {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      transition: all 1.5s ease;
+    }
+
+    .sun {
+      background: radial-gradient(circle, #fff58c, #ffb400);
+      filter: drop-shadow(0 0 30px rgba(255, 200, 0, 0.7));
+    }
+
+    .moon {
+      background: radial-gradient(circle, #dfe6e9, #b2bec3);
+      filter: drop-shadow(0 0 25px rgba(200,200,255,0.4));
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: transparent url('https://i.ibb.co/2v9pM5d/stars.png') repeat;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    @keyframes floatSun {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes floatMoon {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="sun" id="sun"></div>
+    <div class="moon" id="moon"></div>
+    <div class="stars" id="stars"></div>
+  </div>
+
+  <h1 id="greeting">Welkom 🌤️</h1>
+  <div class="clock">
+    <div class="time" id="time">00:00:00</div>
+    <div class="date" id="date">Maandag, 1 januari 2025</div>
+  </div>
+
+  <div class="links">
+    <a href="https://wa.me/6285183284059" target="_blank" class="link-btn whatsapp">
+      <i class="fab fa-whatsapp"></i> WhatsApp
+    </a>
+    <a href="https://github.com/ftrii484-sketch" target="_blank" class="link-btn github">
+      <i class="fab fa-github"></i> GitHub
+    </a>
+  </div>
+
+  <script>
+    const body = document.body;
+    const greetingEl = document.getElementById('greeting');
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+    const sun = document.getElementById('sun');
+    const moon = document.getElementById('moon');
+    const stars = document.getElementById('stars');
+
+    function updateClock() {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes().toString().padStart(2, '0');
+      const second = now.getSeconds().toString().padStart(2, '0');
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute}:${second}`;
+      timeEl.textContent = timeStr;
+
+      const days = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+      const months = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+      const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      dateEl.textContent = dateStr;
+
+      setTheme(hour);
+    }
+
+    function setTheme(hour) {
+      if (hour >= 5 && hour < 11) {
+        body.style.background = "var(--pagi-bg)";
+        body.style.color = "var(--pagi-text)";
+        greetingEl.textContent = "Goedemorgen ☀️";
+        sun.style.display = "block";
+        sun.style.top = "25%";
+        sun.style.left = "20%";
+        sun.style.animation = "floatSun 6s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 11 && hour < 15) {
+        body.style.background = "var(--siang-bg)";
+        body.style.color = "var(--siang-text)";
+        greetingEl.textContent = "Goedemiddag 🌤️";
+        sun.style.display = "block";
+        sun.style.top = "10%";
+        sun.style.left = "50%";
+        sun.style.animation = "floatSun 5s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 15 && hour < 18) {
+        body.style.background = "var(--sore-bg)";
+        body.style.color = "var(--sore-text)";
+        greetingEl.textContent = "Goede namiddag 🌇";
+        sun.style.display = "block";
+        sun.style.top = "45%";
+        sun.style.left = "70%";
+        sun.style.animation = "floatSun 7s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0.2;
+      } else {
+        body.style.background = "var(--malam-bg)";
+        body.style.color = "var(--malam-text)";
+        greetingEl.textContent = "Goedeavond 🌙";
+        sun.style.display = "none";
+        moon.style.display = "block";
+        moon.style.top = "30%";
+        moon.style.left = "60%";
+        moon.style.animation = "floatMoon 10s ease-in-out infinite";
+        stars.style.opacity = 1;
+      }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wereldklok - Interactieve Tijd</title>
+
+  <!-- Font Awesome untuk ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --pagi-bg: linear-gradient(180deg, #a8e6ff, #fff5cc);
+      --siang-bg: linear-gradient(180deg, #4fc3f7, #ffffff);
+      --sore-bg: linear-gradient(180deg, #ff9966, #ffcc99);
+      --malam-bg: linear-gradient(180deg, #001f3f, #1a1a40);
+
+      --pagi-text: #1a1a1a;
+      --siang-text: #222;
+      --sore-text: #331a00;
+      --malam-text: #f1f1f1;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      transition: background 1.5s ease, color 1.5s ease;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      transition: color 1.5s ease;
+    }
+
+    .clock {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      padding: 30px 50px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      text-align: center;
+      transition: all 1s ease;
+    }
+
+    .time {
+      font-size: 4em;
+      font-weight: 700;
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+    }
+
+    .date {
+      font-size: 1.4em;
+      opacity: 0.9;
+    }
+
+    /* ===== Tombol Link ===== */
+    .links {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 220px; /* panjang tombol sama */
+      text-align: center;
+    }
+
+    .link-btn i {
+      font-size: 1.2em;
+    }
+
+    .link-btn.whatsapp {
+      background: #25D366;
+      color: white;
+    }
+    .link-btn.whatsapp:hover {
+      background: #1ebe5b;
+      transform: translateY(-3px);
+    }
+
+    .link-btn.github {
+      background: #333;
+      color: white;
+    }
+    .link-btn.github:hover {
+      background: #555;
+      transform: translateY(-3px);
+    }
+
+    /* ===== Scene ===== */
+    .scene {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      transition: background 2s ease;
+    }
+
+    .sun, .moon {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      transition: all 1.5s ease;
+    }
+
+    .sun {
+      background: radial-gradient(circle, #fff58c, #ffb400);
+      filter: drop-shadow(0 0 30px rgba(255, 200, 0, 0.7));
+    }
+
+    .moon {
+      background: radial-gradient(circle, #dfe6e9, #b2bec3);
+      filter: drop-shadow(0 0 25px rgba(200,200,255,0.4));
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: transparent url('https://i.ibb.co/2v9pM5d/stars.png') repeat;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    @keyframes floatSun {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes floatMoon {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="sun" id="sun"></div>
+    <div class="moon" id="moon"></div>
+    <div class="stars" id="stars"></div>
+  </div>
+
+  <h1 id="greeting">Welkom 🌤️</h1>
+  <div class="clock">
+    <div class="time" id="time">00:00:00</div>
+    <div class="date" id="date">Maandag, 1 januari 2025</div>
+  </div>
+
+  <div class="links">
+    <a href="https://wa.me/6285183284059" target="_blank" class="link-btn whatsapp">
+      <i class="fab fa-whatsapp"></i> WhatsApp
+    </a>
+    <a href="https://github.com/ftrii484-sketch" target="_blank" class="link-btn github">
+      <i class="fab fa-github"></i> GitHub
+    </a>
+  </div>
+
+  <script>
+    const body = document.body;
+    const greetingEl = document.getElementById('greeting');
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+    const sun = document.getElementById('sun');
+    const moon = document.getElementById('moon');
+    const stars = document.getElementById('stars');
+
+    function updateClock() {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes().toString().padStart(2, '0');
+      const second = now.getSeconds().toString().padStart(2, '0');
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute}:${second}`;
+      timeEl.textContent = timeStr;
+
+      const days = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+      const months = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+      const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      dateEl.textContent = dateStr;
+
+      setTheme(hour);
+    }
+
+    function setTheme(hour) {
+      if (hour >= 5 && hour < 11) {
+        body.style.background = "var(--pagi-bg)";
+        body.style.color = "var(--pagi-text)";
+        greetingEl.textContent = "Goedemorgen ☀️";
+        sun.style.display = "block";
+        sun.style.top = "25%";
+        sun.style.left = "20%";
+        sun.style.animation = "floatSun 6s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 11 && hour < 15) {
+        body.style.background = "var(--siang-bg)";
+        body.style.color = "var(--siang-text)";
+        greetingEl.textContent = "Goedemiddag 🌤️";
+        sun.style.display = "block";
+        sun.style.top = "10%";
+        sun.style.left = "50%";
+        sun.style.animation = "floatSun 5s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 15 && hour < 18) {
+        body.style.background = "var(--sore-bg)";
+        body.style.color = "var(--sore-text)";
+        greetingEl.textContent = "Goede namiddag 🌇";
+        sun.style.display = "block";
+        sun.style.top = "45%";
+        sun.style.left = "70%";
+        sun.style.animation = "floatSun 7s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0.2;
+      } else {
+        body.style.background = "var(--malam-bg)";
+        body.style.color = "var(--malam-text)";
+        greetingEl.textContent = "Goedeavond 🌙";
+        sun.style.display = "none";
+        moon.style.display = "block";
+        moon.style.top = "30%";
+        moon.style.left = "60%";
+        moon.style.animation = "floatMoon 10s ease-in-out infinite";
+        stars.style.opacity = 1;
+      }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wereldklok - Interactieve Tijd</title>
+
+  <!-- Font Awesome untuk ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --pagi-bg: linear-gradient(180deg, #a8e6ff, #fff5cc);
+      --siang-bg: linear-gradient(180deg, #4fc3f7, #ffffff);
+      --sore-bg: linear-gradient(180deg, #ff9966, #ffcc99);
+      --malam-bg: linear-gradient(180deg, #001f3f, #1a1a40);
+
+      --pagi-text: #1a1a1a;
+      --siang-text: #222;
+      --sore-text: #331a00;
+      --malam-text: #f1f1f1;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      transition: background 1.5s ease, color 1.5s ease;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      transition: color 1.5s ease;
+    }
+
+    .clock {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      padding: 30px 50px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      text-align: center;
+      transition: all 1s ease;
+    }
+
+    .time {
+      font-size: 4em;
+      font-weight: 700;
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+    }
+
+    .date {
+      font-size: 1.4em;
+      opacity: 0.9;
+    }
+
+    /* ===== Tombol Link ===== */
+    .links {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 220px; /* panjang tombol sama */
+      text-align: center;
+    }
+
+    .link-btn i {
+      font-size: 1.2em;
+    }
+
+    .link-btn.whatsapp {
+      background: #25D366;
+      color: white;
+    }
+    .link-btn.whatsapp:hover {
+      background: #1ebe5b;
+      transform: translateY(-3px);
+    }
+
+    .link-btn.github {
+      background: #333;
+      color: white;
+    }
+    .link-btn.github:hover {
+      background: #555;
+      transform: translateY(-3px);
+    }
+
+    /* ===== Scene ===== */
+    .scene {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      transition: background 2s ease;
+    }
+
+    .sun, .moon {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      transition: all 1.5s ease;
+    }
+
+    .sun {
+      background: radial-gradient(circle, #fff58c, #ffb400);
+      filter: drop-shadow(0 0 30px rgba(255, 200, 0, 0.7));
+    }
+
+    .moon {
+      background: radial-gradient(circle, #dfe6e9, #b2bec3);
+      filter: drop-shadow(0 0 25px rgba(200,200,255,0.4));
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: transparent url('https://i.ibb.co/2v9pM5d/stars.png') repeat;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    @keyframes floatSun {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes floatMoon {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="sun" id="sun"></div>
+    <div class="moon" id="moon"></div>
+    <div class="stars" id="stars"></div>
+  </div>
+
+  <h1 id="greeting">Welkom 🌤️</h1>
+  <div class="clock">
+    <div class="time" id="time">00:00:00</div>
+    <div class="date" id="date">Maandag, 1 januari 2025</div>
+  </div>
+
+  <div class="links">
+    <a href="https://wa.me/6285183284059" target="_blank" class="link-btn whatsapp">
+      <i class="fab fa-whatsapp"></i> WhatsApp
+    </a>
+    <a href="https://github.com/ftrii484-sketch" target="_blank" class="link-btn github">
+      <i class="fab fa-github"></i> GitHub
+    </a>
+  </div>
+
+  <script>
+    const body = document.body;
+    const greetingEl = document.getElementById('greeting');
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+    const sun = document.getElementById('sun');
+    const moon = document.getElementById('moon');
+    const stars = document.getElementById('stars');
+
+    function updateClock() {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes().toString().padStart(2, '0');
+      const second = now.getSeconds().toString().padStart(2, '0');
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute}:${second}`;
+      timeEl.textContent = timeStr;
+
+      const days = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+      const months = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+      const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      dateEl.textContent = dateStr;
+
+      setTheme(hour);
+    }
+
+    function setTheme(hour) {
+      if (hour >= 5 && hour < 11) {
+        body.style.background = "var(--pagi-bg)";
+        body.style.color = "var(--pagi-text)";
+        greetingEl.textContent = "Goedemorgen ☀️";
+        sun.style.display = "block";
+        sun.style.top = "25%";
+        sun.style.left = "20%";
+        sun.style.animation = "floatSun 6s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 11 && hour < 15) {
+        body.style.background = "var(--siang-bg)";
+        body.style.color = "var(--siang-text)";
+        greetingEl.textContent = "Goedemiddag 🌤️";
+        sun.style.display = "block";
+        sun.style.top = "10%";
+        sun.style.left = "50%";
+        sun.style.animation = "floatSun 5s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 15 && hour < 18) {
+        body.style.background = "var(--sore-bg)";
+        body.style.color = "var(--sore-text)";
+        greetingEl.textContent = "Goede namiddag 🌇";
+        sun.style.display = "block";
+        sun.style.top = "45%";
+        sun.style.left = "70%";
+        sun.style.animation = "floatSun 7s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0.2;
+      } else {
+        body.style.background = "var(--malam-bg)";
+        body.style.color = "var(--malam-text)";
+        greetingEl.textContent = "Goedeavond 🌙";
+        sun.style.display = "none";
+        moon.style.display = "block";
+        moon.style.top = "30%";
+        moon.style.left = "60%";
+        moon.style.animation = "floatMoon 10s ease-in-out infinite";
+        stars.style.opacity = 1;
+      }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>

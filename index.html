@@ -1,180 +1,255 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Link Saya</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wereldklok - Interactieve Tijd</title>
 
+  <!-- Font Awesome untuk ikon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+    :root {
+      --pagi-bg: linear-gradient(180deg, #a8e6ff, #fff5cc);
+      --siang-bg: linear-gradient(180deg, #4fc3f7, #ffffff);
+      --sore-bg: linear-gradient(180deg, #ff9966, #ffcc99);
+      --malam-bg: linear-gradient(180deg, #001f3f, #1a1a40);
+
+      --pagi-text: #1a1a1a;
+      --siang-text: #222;
+      --sore-text: #331a00;
+      --malam-text: #f1f1f1;
+    }
 
     body {
-      color: white;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      min-height:100vh;
-      text-align:center;
-      padding:20px;
-      overflow:hidden;
-      transition: background 2s ease;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      transition: background 1.5s ease, color 1.5s ease;
+      overflow: hidden;
     }
 
-    img {
-      width:100px;
-      height:100px;
-      border-radius:50%;
-      border:3px solid white;
-      margin-bottom:12px;
-      object-fit:cover;
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      transition: color 1.5s ease;
     }
-
-    #greeting {
-      font-size:22px;
-      margin-bottom:14px;
-      white-space:nowrap;
-    }
-
-    .caret {
-      border-right: 3px solid currentColor;
-      padding-right:6px;
-      animation: blink-caret 0.8s step-end infinite;
-    }
-
-    @keyframes blink-caret {
-      50% { border-color: transparent; }
-    }
-
-    h1 { margin-bottom: 10px; font-size:26px; color: #fff; }
 
     .clock {
-      margin-bottom: 16px;
       background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 14px 25px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
-      text-align:center;
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      padding: 30px 50px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      text-align: center;
+      transition: all 1s ease;
     }
 
     .time {
-      font-size: 1.8em;
-      font-weight: 600;
-      letter-spacing: 2px;
+      font-size: 4em;
+      font-weight: 700;
+      letter-spacing: 3px;
+      margin-bottom: 10px;
     }
 
     .date {
-      font-size: 1em;
+      font-size: 1.4em;
       opacity: 0.9;
-      margin-top: 5px;
     }
 
-    a {
-      display:flex; align-items:center; justify-content:center; gap:10px;
-      background:white; color:#2575fc; text-decoration:none;
-      padding:12px 20px; margin:8px 0; border-radius:30px;
-      font-weight:600; transition: all 0.25s ease; max-width:300px; width:100%;
+    /* ===== Tombol Link ===== */
+    .links {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    a:hover {
-      background:#2575fc; color:white; transform:translateY(-3px);
-      box-shadow:0 6px 18px rgba(0,0,0,0.18);
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 220px; /* panjang tombol sama */
+      text-align: center;
     }
 
-    footer { margin-top:26px; font-size:14px; opacity:0.8; color:rgba(255,255,255,0.9); }
-
-    @media (max-width:420px){
-      #greeting { font-size:18px; }
-      .time { font-size:1.5em; }
-      h1 { font-size:20px; }
-      img { width:84px; height:84px; }
+    .link-btn i {
+      font-size: 1.2em;
     }
 
-    /* ====== Tema warna sesuai jam ====== */
-    .sunrise {
-      background: linear-gradient(to top, #FFB75E, #ED8F03);
+    .link-btn.whatsapp {
+      background: #25D366;
+      color: white;
+    }
+    .link-btn.whatsapp:hover {
+      background: #1ebe5b;
+      transform: translateY(-3px);
     }
 
-    .day {
-      background: linear-gradient(to top, #56CCF2, #2F80ED);
+    .link-btn.github {
+      background: #333;
+      color: white;
+    }
+    .link-btn.github:hover {
+      background: #555;
+      transform: translateY(-3px);
     }
 
-    .night {
-      background: linear-gradient(to top, #0f2027, #203a43, #2c5364);
+    /* ===== Scene ===== */
+    .scene {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      transition: background 2s ease;
     }
 
+    .sun, .moon {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      transition: all 1.5s ease;
+    }
+
+    .sun {
+      background: radial-gradient(circle, #fff58c, #ffb400);
+      filter: drop-shadow(0 0 30px rgba(255, 200, 0, 0.7));
+    }
+
+    .moon {
+      background: radial-gradient(circle, #dfe6e9, #b2bec3);
+      filter: drop-shadow(0 0 25px rgba(200,200,255,0.4));
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: transparent url('https://i.ibb.co/2v9pM5d/stars.png') repeat;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    @keyframes floatSun {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes floatMoon {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
   </style>
 </head>
-<body id="bg">
+<body>
+  <div class="scene" id="scene">
+    <div class="sun" id="sun"></div>
+    <div class="moon" id="moon"></div>
+    <div class="stars" id="stars"></div>
+  </div>
 
-  <img src="5a52725305fc2bdd1cea4d89843df8e4 (1).jpg" alt="Foto Profil">
-
-  <h2 id="greeting" aria-live="polite" role="status"></h2>
-
+  <h1 id="greeting">Welkom 🌤️</h1>
   <div class="clock">
     <div class="time" id="time">00:00:00</div>
     <div class="date" id="date">Maandag, 1 januari 2025</div>
   </div>
 
-  <a href="https://wa.me/6285183284059" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-  <a href="https://ftrii484-sketch.github.io/My-Pas5/" target="_blank"><i class="fab fa-github"></i> GitHub</a>
-
-  <footer>© 2025</footer>
+  <div class="links">
+    <a href="https://wa.me/6285183284059" target="_blank" class="link-btn whatsapp">
+      <i class="fab fa-whatsapp"></i> WhatsApp
+    </a>
+    <a href="https://github.com/ftrii484-sketch" target="_blank" class="link-btn github">
+      <i class="fab fa-github"></i> GitHub
+    </a>
+  </div>
 
   <script>
-    function getGreeting() {
-      const hour = new Date().getHours();
-      if (hour < 12) return { text: "Goedemorgen", theme: "sunrise" };
-      if (hour < 18) return { text: "Goedemiddag", theme: "day" };
-      return { text: "Goedeavond", theme: "night" };
-    }
-
-    async function typeEffectWithCaret(el, text, speed = 70) {
-      el.textContent = "";
-      el.classList.add('caret');
-      for (let i = 0; i < text.length; i++) {
-        el.textContent += text.charAt(i);
-        await new Promise(r => setTimeout(r, speed));
-      }
-      el.classList.remove('caret');
-    }
-
+    const body = document.body;
     const greetingEl = document.getElementById('greeting');
-    const bg = document.getElementById('bg');
-    let currentText = "";
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+    const sun = document.getElementById('sun');
+    const moon = document.getElementById('moon');
+    const stars = document.getElementById('stars');
 
-    async function updateGreeting() {
-      const { text, theme } = getGreeting();
-      if (text !== currentText) {
-        currentText = text;
-        bg.className = theme;
-        greetingEl.textContent = "";
-        await new Promise(r => setTimeout(r, 300));
-        typeEffectWithCaret(greetingEl, text, 70);
-      }
-    }
-
-    // ====== Jam & Tanggal ======
     function updateClock() {
       const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const seconds = now.getSeconds().toString().padStart(2, '0');
-      document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
+      const hour = now.getHours();
+      const minute = now.getMinutes().toString().padStart(2, '0');
+      const second = now.getSeconds().toString().padStart(2, '0');
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute}:${second}`;
+      timeEl.textContent = timeStr;
 
       const days = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
       const months = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
       const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-      document.getElementById('date').textContent = dateStr;
+      dateEl.textContent = dateStr;
+
+      setTheme(hour);
     }
 
-    updateGreeting();
-    updateClock();
-    setInterval(updateGreeting, 60000);
+    function setTheme(hour) {
+      if (hour >= 5 && hour < 11) {
+        body.style.background = "var(--pagi-bg)";
+        body.style.color = "var(--pagi-text)";
+        greetingEl.textContent = "Goedemorgen ☀️";
+        sun.style.display = "block";
+        sun.style.top = "25%";
+        sun.style.left = "20%";
+        sun.style.animation = "floatSun 6s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 11 && hour < 15) {
+        body.style.background = "var(--siang-bg)";
+        body.style.color = "var(--siang-text)";
+        greetingEl.textContent = "Goedemiddag 🌤️";
+        sun.style.display = "block";
+        sun.style.top = "10%";
+        sun.style.left = "50%";
+        sun.style.animation = "floatSun 5s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0;
+      } else if (hour >= 15 && hour < 18) {
+        body.style.background = "var(--sore-bg)";
+        body.style.color = "var(--sore-text)";
+        greetingEl.textContent = "Goede namiddag 🌇";
+        sun.style.display = "block";
+        sun.style.top = "45%";
+        sun.style.left = "70%";
+        sun.style.animation = "floatSun 7s ease-in-out infinite";
+        moon.style.display = "none";
+        stars.style.opacity = 0.2;
+      } else {
+        body.style.background = "var(--malam-bg)";
+        body.style.color = "var(--malam-text)";
+        greetingEl.textContent = "Goedeavond 🌙";
+        sun.style.display = "none";
+        moon.style.display = "block";
+        moon.style.top = "30%";
+        moon.style.left = "60%";
+        moon.style.animation = "floatMoon 10s ease-in-out infinite";
+        stars.style.opacity = 1;
+      }
+    }
+
     setInterval(updateClock, 1000);
+    updateClock();
   </script>
 </body>
 </html>
